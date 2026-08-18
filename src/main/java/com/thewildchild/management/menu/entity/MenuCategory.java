@@ -30,6 +30,9 @@ public class MenuCategory extends BaseEntity {
     @Column(length = 500)
     private String description;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
+
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 }
