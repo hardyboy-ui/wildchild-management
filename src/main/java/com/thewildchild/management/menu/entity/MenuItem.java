@@ -31,6 +31,9 @@ public class MenuItem extends BaseEntity {
     @Column(name = "food_type", nullable = false, length = 20)
     private FoodType foodType;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "menu_category_id",
