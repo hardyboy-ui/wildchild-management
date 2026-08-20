@@ -34,4 +34,7 @@ public class AddOn extends BaseEntity {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
 }
