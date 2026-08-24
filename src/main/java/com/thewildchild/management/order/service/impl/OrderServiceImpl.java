@@ -7,6 +7,7 @@ import com.thewildchild.management.common.exception.ResourceNotFoundException;
 import com.thewildchild.management.menu.entity.AddOn;
 import com.thewildchild.management.menu.entity.MenuItem;
 import com.thewildchild.management.menu.repository.AddOnRepository;
+import com.thewildchild.management.menu.repository.MenuItemAddOnRepository;
 import com.thewildchild.management.menu.repository.MenuItemRepository;
 import com.thewildchild.management.order.dto.request.AddOrderItemAddOnRequest;
 import com.thewildchild.management.order.dto.request.AddOrderItemRequest;
@@ -37,6 +38,8 @@ public class OrderServiceImpl implements OrderService {
     private final MenuItemRepository menuItemRepository;
     private final AddOnRepository addOnRepository;
     private final OrderMapper orderMapper;
+    private final MenuItemAddOnRepository menuItemAddOnRepository;
+
 
     @Override
     public OrderResponse createOrder(UUID diningSessionId) {
@@ -113,10 +116,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (existingOrderItem != null) {
 
-            existingOrderItem.setQuantity(
-                    existingOrderItem.getQuantity()
-                            + request.getQuantity()
-            );
+            existingOrderItem.setQuantity(request.getQuantity());
 
         } else {
 
@@ -167,6 +167,7 @@ public class OrderServiceImpl implements OrderService {
             return;
         }
 
+        // Specific checks for addOns
         Set<UUID> addOnIds = new HashSet<>();
 
         for (AddOrderItemAddOnRequest addOnRequest
@@ -214,6 +215,19 @@ public class OrderServiceImpl implements OrderService {
                 throw new BusinessException(
                         "Add-on is not active: "
                                 + addOn.getName()
+                );
+            }
+            boolean allowed =
+                    menuItemAddOnRepository
+                            .existsByMenuItemIdAndAddOnId(
+                                    request.getMenuItemId(),
+                                    addOn.getId()
+                            );
+
+            if (!allowed) {
+                throw new BusinessException(
+                        "Add-on '" + addOn.getName()
+                                + "' is not available for menu item"
                 );
             }
         }
