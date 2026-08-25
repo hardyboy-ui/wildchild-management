@@ -1,6 +1,7 @@
 package com.thewildchild.management.invoice.entity;
 
 import com.thewildchild.management.common.entity.BaseEntity;
+import com.thewildchild.management.payment.entity.Payment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,4 +45,11 @@ public class Invoice extends BaseEntity {
             orphanRemoval = true
     )
     private List<InvoiceOrder> invoiceOrders = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "invoice",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Payment> payments = new ArrayList<>();
 }

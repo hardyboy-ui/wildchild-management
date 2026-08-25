@@ -13,6 +13,7 @@ import com.thewildchild.management.invoice.service.mapper.InvoiceMapper;
 import com.thewildchild.management.invoice.repository.InvoiceOrderRepository;
 import com.thewildchild.management.invoice.repository.InvoiceRepository;
 import com.thewildchild.management.invoice.service.InvoiceService;
+import com.thewildchild.management.invoice.service.validator.InvoiceValidator;
 import com.thewildchild.management.order.entity.Order;
 import com.thewildchild.management.order.entity.OrderItem;
 import com.thewildchild.management.order.entity.OrderBillingStatus;
@@ -36,6 +37,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final OrderRepository orderRepository;
     private final DiningSessionRepository diningSessionRepository;
     private final InvoiceMapper invoiceMapper;
+    private final InvoiceValidator invoiceValidator;
 
     @Override
     public InvoiceResponse generateOrderInvoice(UUID orderId) {
@@ -48,7 +50,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         )
                 );
 
-        validateOrderCanBeInvoiced(order);
+        invoiceValidator.validateOrderCanBeInvoiced(order);
 
         Invoice invoice = createInvoice(
                 InvoiceBillingType.ORDER
@@ -101,7 +103,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         for (Order order : unbilledOrders) {
 
-            validateOrderCanBeInvoiced(order);
+            invoiceValidator.validateOrderCanBeInvoiced(order);
 
             addOrderToInvoice(invoice, order);
 
@@ -280,19 +282,6 @@ public class InvoiceServiceImpl implements InvoiceService {
                         .add(invoice.getTax());
 
         invoice.setGrandTotal(grandTotal);
-    }
-
-    private void validateOrderCanBeInvoiced(
-            Order order
-    ) {
-
-        if (order.getBillingStatus()
-                != OrderBillingStatus.UNBILLED) {
-
-            throw new BusinessException(
-                    "Order has already been billed"
-            );
-        }
     }
 
     private String generateInvoiceNumber() {
