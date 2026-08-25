@@ -49,4 +49,8 @@ public class Order extends BaseEntity {
             orphanRemoval = true
     )
     private List<OrderItem> items = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderBillingStatus billingStatus;
 }

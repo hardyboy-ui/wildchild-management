@@ -13,6 +13,7 @@ import com.thewildchild.management.order.dto.request.AddOrderItemAddOnRequest;
 import com.thewildchild.management.order.dto.request.AddOrderItemRequest;
 import com.thewildchild.management.order.dto.response.OrderResponse;
 import com.thewildchild.management.order.entity.Order;
+import com.thewildchild.management.order.entity.OrderBillingStatus;
 import com.thewildchild.management.order.entity.OrderItem;
 import com.thewildchild.management.order.entity.OrderItemAddOn;
 import com.thewildchild.management.order.repository.OrderRepository;
@@ -57,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderNumber(generateOrderNumber());
         order.setDiningSession(diningSession);
+        order.setBillingStatus(OrderBillingStatus.UNBILLED);
 
         Order savedOrder = orderRepository.save(order);
 

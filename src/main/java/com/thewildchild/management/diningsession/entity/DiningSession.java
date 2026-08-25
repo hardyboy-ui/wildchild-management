@@ -1,6 +1,7 @@
 package com.thewildchild.management.diningsession.entity;
 
 import com.thewildchild.management.common.entity.BaseEntity;
+import com.thewildchild.management.order.entity.Order;
 import com.thewildchild.management.table.entity.CafeTable;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "dining_sessions")
@@ -31,6 +34,12 @@ public class DiningSession extends BaseEntity {
             foreignKey = @ForeignKey(name = "fk_dining_session_table")
     )
     private CafeTable table;
+
+    @OneToMany(
+            mappedBy = "diningSession",
+            fetch = FetchType.LAZY
+    )
+    private List<Order> orders = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
