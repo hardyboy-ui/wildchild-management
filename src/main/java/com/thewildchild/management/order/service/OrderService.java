@@ -15,4 +15,6 @@ public interface OrderService {
             UUID orderId,
             AddOrderItemRequest request
     );
+
+    OrderResponse closeOrder(UUID orderId);
 }

@@ -27,12 +27,6 @@ public class Invoice extends BaseEntity {
     private BigDecimal subtotal;
 
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal discount;
-
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal tax;
-
-    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal grandTotal;
 
     @Enumerated(EnumType.STRING)
@@ -52,4 +46,39 @@ public class Invoice extends BaseEntity {
             orphanRemoval = true
     )
     private List<Payment> payments = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type")
+    private DiscountType discountType;
+
+    @Column(
+            name = "discount_value",
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal discountValue;
+
+    @Column(
+            name = "discount_amount",
+            nullable = false,
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal discountAmount;
+
+    @Column(
+            name = "tax_rate",
+            nullable = false,
+            precision = 5,
+            scale = 2
+    )
+    private BigDecimal taxRate;
+
+    @Column(
+            name = "tax_amount",
+            nullable = false,
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal taxAmount;
 }

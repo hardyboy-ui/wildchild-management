@@ -31,6 +31,15 @@ public class OrderController {
                 .body(response);
     }
 
+    @PatchMapping("/{orderId}/close")
+    public ResponseEntity<OrderResponse> closeOrder(
+            @PathVariable UUID orderId
+    ) {
+        return ResponseEntity.ok(
+                orderService.closeOrder(orderId)
+        );
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrderById(
             @PathVariable UUID orderId

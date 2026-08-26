@@ -20,8 +20,12 @@ public class InvoiceMapper {
         response.setBillingType(entity.getBillingType());
 
         response.setSubtotal(entity.getSubtotal());
-        response.setDiscount(entity.getDiscount());
-        response.setTax(entity.getTax());
+
+        response.setDiscountType(entity.getDiscountType());
+        response.setDiscountValue(entity.getDiscountValue());
+        response.setDiscountAmount(entity.getDiscountAmount());
+        response.setTaxRate(entity.getTaxRate());
+        response.setTaxAmount(entity.getTaxAmount());
         response.setGrandTotal(entity.getGrandTotal());
 
         response.setStatus(entity.getStatus());

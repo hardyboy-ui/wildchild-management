@@ -12,13 +12,11 @@ import com.thewildchild.management.menu.repository.MenuItemRepository;
 import com.thewildchild.management.order.dto.request.AddOrderItemAddOnRequest;
 import com.thewildchild.management.order.dto.request.AddOrderItemRequest;
 import com.thewildchild.management.order.dto.response.OrderResponse;
-import com.thewildchild.management.order.entity.Order;
-import com.thewildchild.management.order.entity.OrderBillingStatus;
-import com.thewildchild.management.order.entity.OrderItem;
-import com.thewildchild.management.order.entity.OrderItemAddOn;
+import com.thewildchild.management.order.entity.*;
 import com.thewildchild.management.order.repository.OrderRepository;
 import com.thewildchild.management.order.service.OrderService;
 import com.thewildchild.management.order.service.mapper.OrderMapper;
+import com.thewildchild.management.order.service.validator.OrderValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final MenuItemRepository menuItemRepository;
     private final AddOnRepository addOnRepository;
     private final OrderMapper orderMapper;
+    private final OrderValidator orderValidator;
     private final MenuItemAddOnRepository menuItemAddOnRepository;
 
 
@@ -58,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderNumber(generateOrderNumber());
         order.setDiningSession(diningSession);
+        order.setStatus(OrderStatus.OPEN);
         order.setBillingStatus(OrderBillingStatus.UNBILLED);
 
         Order savedOrder = orderRepository.save(order);
@@ -94,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
                         )
                 );
 
-        validateRequest(request);
+        orderValidator.validateRequest(request);
 
         MenuItem menuItem = menuItemRepository
                 .findById(request.getMenuItemId())
@@ -153,36 +153,25 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(savedOrder);
     }
 
-    private void validateRequest(
-            AddOrderItemRequest request
-    ) {
+    @Override
+    public OrderResponse closeOrder(UUID orderId) {
 
-        if (request.getQuantity() == null
-                || request.getQuantity() < 1) {
-
-            throw new BusinessException(
-                    "Quantity must be at least 1"
-            );
-        }
-
-        if (request.getAddOns() == null) {
-            return;
-        }
-
-        // Specific checks for addOns
-        Set<UUID> addOnIds = new HashSet<>();
-
-        for (AddOrderItemAddOnRequest addOnRequest
-                : request.getAddOns()) {
-
-            if (!addOnIds.add(addOnRequest.getAddOnId())) {
-
-                throw new BusinessException(
-                        "Duplicate add-on is not allowed: "
-                                + addOnRequest.getAddOnId()
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
                 );
-            }
-        }
+
+        orderValidator.validateCanBeClosed(order);
+
+        order.setStatus(OrderStatus.CLOSED);
+
+        Order savedOrder =
+                orderRepository.save(order);
+
+        return orderMapper.toResponse(savedOrder);
     }
 
     private List<AddOn> getAndValidateAddOns(

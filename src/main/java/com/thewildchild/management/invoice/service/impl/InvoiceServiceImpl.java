@@ -4,11 +4,9 @@ import com.thewildchild.management.diningsession.entity.DiningSession;
 import com.thewildchild.management.diningsession.repository.DiningSessionRepository;
 import com.thewildchild.management.common.exception.BusinessException;
 import com.thewildchild.management.common.exception.ResourceNotFoundException;
+import com.thewildchild.management.invoice.dto.request.GenerateInvoiceRequest;
 import com.thewildchild.management.invoice.dto.response.InvoiceResponse;
-import com.thewildchild.management.invoice.entity.Invoice;
-import com.thewildchild.management.invoice.entity.InvoiceBillingType;
-import com.thewildchild.management.invoice.entity.InvoiceOrder;
-import com.thewildchild.management.invoice.entity.InvoiceStatus;
+import com.thewildchild.management.invoice.entity.*;
 import com.thewildchild.management.invoice.service.mapper.InvoiceMapper;
 import com.thewildchild.management.invoice.repository.InvoiceOrderRepository;
 import com.thewildchild.management.invoice.repository.InvoiceRepository;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +39,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceValidator invoiceValidator;
 
     @Override
-    public InvoiceResponse generateOrderInvoice(UUID orderId) {
+    public InvoiceResponse generateOrderInvoice(UUID orderId,
+                                                GenerateInvoiceRequest request) {
 
         Order order = orderRepository
                 .findById(orderId)
@@ -58,7 +58,25 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         addOrderToInvoice(invoice, order);
 
-        calculateInvoiceTotals(invoice, List.of(order));
+        BigDecimal subtotal =
+                calculateSubtotal(List.of(order));
+
+        invoice.setSubtotal(subtotal);
+
+        invoiceValidator.validateDiscount(
+                request.getDiscountType(),
+                request.getDiscountValue(),
+                subtotal
+        );
+
+        invoiceValidator.validateTax(
+                request.getTaxRate()
+        );
+
+        calculateInvoiceTotals(
+                invoice,
+                request
+        );
 
         order.setBillingStatus(OrderBillingStatus.BILLED);
 
@@ -69,7 +87,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse generateDiningSessionInvoice(
-            UUID diningSessionId
+            UUID diningSessionId,GenerateInvoiceRequest request
     ) {
 
         DiningSession diningSession =
@@ -112,9 +130,24 @@ public class InvoiceServiceImpl implements InvoiceService {
             );
         }
 
+        BigDecimal subtotal =
+                calculateSubtotal(unbilledOrders);
+
+        invoice.setSubtotal(subtotal);
+
+        invoiceValidator.validateDiscount(
+                request.getDiscountType(),
+                request.getDiscountValue(),
+                subtotal
+        );
+
+        invoiceValidator.validateTax(
+                request.getTaxRate()
+        );
+
         calculateInvoiceTotals(
                 invoice,
-                unbilledOrders
+                request
         );
 
         Invoice savedInvoice =
@@ -194,8 +227,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setBillingType(billingType);
 
         invoice.setSubtotal(BigDecimal.ZERO);
-        invoice.setDiscount(BigDecimal.ZERO);
-        invoice.setTax(BigDecimal.ZERO);
+
+        invoice.setDiscountValue(BigDecimal.ZERO);
+        invoice.setDiscountAmount(BigDecimal.ZERO);
+
+        invoice.setTaxRate(BigDecimal.ZERO);
+        invoice.setTaxAmount(BigDecimal.ZERO);
+
         invoice.setGrandTotal(BigDecimal.ZERO);
 
         invoice.setStatus(
@@ -224,8 +262,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .add(invoiceOrder);
     }
 
-    private void calculateInvoiceTotals(
-            Invoice invoice,
+    private BigDecimal calculateSubtotal(
             List<Order> orders
     ) {
 
@@ -233,8 +270,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         for (Order order : orders) {
 
-            for (OrderItem orderItem
-                    : order.getItems()) {
+            for (OrderItem orderItem : order.getItems()) {
 
                 BigDecimal itemTotal =
                         orderItem.getUnitPrice()
@@ -253,8 +289,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                                         addOn.getUnitPrice()
                                                 .multiply(
                                                         BigDecimal.valueOf(
-                                                                orderItem
-                                                                        .getQuantity()
+                                                                orderItem.getQuantity()
                                                         )
                                                 )
                                 )
@@ -267,21 +302,93 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
         }
 
-        invoice.setSubtotal(subtotal);
+        return subtotal;
+    }
 
-        /*
-         * Discount and tax calculation will be implemented
-         * once we finalize the taxation/discount rules.
-         */
-        invoice.setDiscount(BigDecimal.ZERO);
-        invoice.setTax(BigDecimal.ZERO);
+    private void calculateInvoiceTotals(
+            Invoice invoice,
+            GenerateInvoiceRequest request
+    ) {
+
+        BigDecimal subtotal = invoice.getSubtotal();
+
+        BigDecimal discountAmount =
+                calculateDiscountAmount(
+                        subtotal,
+                        request.getDiscountType(),
+                        request.getDiscountValue()
+                );
+
+        BigDecimal taxableAmount =
+                subtotal.subtract(discountAmount);
+
+        BigDecimal taxRate =
+                request.getTaxRate() != null
+                        ? request.getTaxRate()
+                        : BigDecimal.ZERO;
+
+        BigDecimal taxAmount =
+                taxableAmount
+                        .multiply(taxRate)
+                        .divide(
+                                BigDecimal.valueOf(100),
+                                2,
+                                RoundingMode.HALF_UP
+                        );
 
         BigDecimal grandTotal =
-                subtotal
-                        .subtract(invoice.getDiscount())
-                        .add(invoice.getTax());
+                taxableAmount.add(taxAmount);
+
+        invoice.setDiscountType(
+                request.getDiscountType()
+        );
+
+        invoice.setDiscountValue(
+                request.getDiscountValue() != null
+                        ? request.getDiscountValue()
+                        : BigDecimal.ZERO
+        );
+
+        invoice.setDiscountAmount(
+                discountAmount
+        );
+
+        invoice.setTaxRate(taxRate);
+
+        invoice.setTaxAmount(taxAmount);
 
         invoice.setGrandTotal(grandTotal);
+    }
+
+    private BigDecimal calculateDiscountAmount(
+            BigDecimal subtotal,
+            DiscountType discountType,
+            BigDecimal discountValue
+    ) {
+
+        if (discountValue == null ||
+                discountValue.compareTo(BigDecimal.ZERO) == 0) {
+
+            return BigDecimal.ZERO;
+        }
+
+        if (discountType == DiscountType.FIXED) {
+
+            return discountValue;
+        }
+
+        if (discountType == DiscountType.PERCENTAGE) {
+
+            return subtotal
+                    .multiply(discountValue)
+                    .divide(
+                            BigDecimal.valueOf(100),
+                            2,
+                            RoundingMode.HALF_UP
+                    );
+        }
+
+        return BigDecimal.ZERO;
     }
 
     private String generateInvoiceNumber() {

@@ -10,6 +10,10 @@ import com.thewildchild.management.diningsession.repository.DiningSessionReposit
 import com.thewildchild.management.diningsession.service.DiningSessionService;
 import com.thewildchild.management.diningsession.service.mapper.DiningSessionMapper;
 import com.thewildchild.management.diningsession.service.validator.DiningSessionValidator;
+import com.thewildchild.management.order.entity.Order;
+import com.thewildchild.management.order.entity.OrderStatus;
+import com.thewildchild.management.order.repository.OrderRepository;
+import com.thewildchild.management.order.service.validator.OrderValidator;
 import com.thewildchild.management.table.entity.CafeTable;
 import com.thewildchild.management.table.repository.CafeTableRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,8 @@ public class DiningSessionServiceImpl implements DiningSessionService {
     private final CafeTableRepository cafeTableRepository;
     private final DiningSessionMapper diningSessionMapper;
     private final DiningSessionValidator diningSessionValidator;
+    private final OrderRepository orderRepository;
+    private final OrderValidator orderValidator;
 
     @Override
     public DiningSessionResponse openSession(
@@ -94,14 +100,38 @@ public class DiningSessionServiceImpl implements DiningSessionService {
     @Override
     public DiningSessionResponse closeSession(UUID sessionId) {
 
+        // 1. Find DiningSession
         DiningSession session = findSessionById(sessionId);
 
+        // 2. Make sure DiningSession is OPEN
         validateOpenSession(session);
 
+        // 3. Get all Orders belonging to this session
+        List<Order> orders =
+                orderRepository.findAllByDiningSessionId(sessionId);
+
+        // 4. Validate ALL Orders
+        //    Nothing has been modified yet.
+        diningSessionValidator.validateOrdersCanBeClosed(orders);
+
+        // 5. All Orders are eligible.
+        //    Now close only the OPEN ones.
+        for (Order order : orders) {
+
+            if (order.getStatus() == OrderStatus.OPEN) {
+                order.setStatus(OrderStatus.CLOSED);
+            }
+        }
+
+        // 6. Close the DiningSession
         session.setStatus(DiningSessionStatus.CLOSED);
         session.setClosedAt(LocalDateTime.now());
 
-        return diningSessionMapper.toResponse(session);
+        // 7. Save the DiningSession
+        DiningSession savedSession =
+                diningSessionRepository.save(session);
+
+        return diningSessionMapper.toResponse(savedSession);
     }
 
     @Override

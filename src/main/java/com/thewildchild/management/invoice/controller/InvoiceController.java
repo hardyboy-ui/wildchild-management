@@ -1,7 +1,9 @@
 package com.thewildchild.management.invoice.controller;
 
+import com.thewildchild.management.invoice.dto.request.GenerateInvoiceRequest;
 import com.thewildchild.management.invoice.dto.response.InvoiceResponse;
 import com.thewildchild.management.invoice.service.InvoiceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,26 +19,30 @@ public class InvoiceController {
 
     @PostMapping("/order/{orderId}")
     public ResponseEntity<InvoiceResponse> generateOrderInvoice(
-            @PathVariable UUID orderId
+            @PathVariable UUID orderId,
+            @Valid @RequestBody GenerateInvoiceRequest request
     ) {
 
-        InvoiceResponse response =
-                invoiceService.generateOrderInvoice(orderId);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                invoiceService.generateOrderInvoice(
+                        orderId,
+                        request
+                )
+        );
     }
 
     @PostMapping("/dining-session/{diningSessionId}")
     public ResponseEntity<InvoiceResponse> generateDiningSessionInvoice(
-            @PathVariable UUID diningSessionId
+            @PathVariable UUID diningSessionId,
+            @Valid @RequestBody GenerateInvoiceRequest request
     ) {
 
-        InvoiceResponse response =
+        return ResponseEntity.ok(
                 invoiceService.generateDiningSessionInvoice(
-                        diningSessionId
-                );
-
-        return ResponseEntity.ok(response);
+                        diningSessionId,
+                        request
+                )
+        );
     }
 
     @GetMapping("/{invoiceId}")

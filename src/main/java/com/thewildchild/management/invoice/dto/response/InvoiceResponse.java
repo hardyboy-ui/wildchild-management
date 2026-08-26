@@ -1,5 +1,6 @@
 package com.thewildchild.management.invoice.dto.response;
 
+import com.thewildchild.management.invoice.entity.DiscountType;
 import com.thewildchild.management.invoice.entity.InvoiceBillingType;
 import com.thewildchild.management.invoice.entity.InvoiceStatus;
 import lombok.Getter;
@@ -24,9 +25,15 @@ public class InvoiceResponse {
 
     private BigDecimal subtotal;
 
-    private BigDecimal discount;
+    private DiscountType discountType;
 
-    private BigDecimal tax;
+    private BigDecimal discountValue;
+
+    private BigDecimal discountAmount;
+
+    private BigDecimal taxRate;
+
+    private BigDecimal taxAmount;
 
     private BigDecimal grandTotal;
 
