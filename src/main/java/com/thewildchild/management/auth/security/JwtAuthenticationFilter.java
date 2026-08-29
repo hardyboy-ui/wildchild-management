@@ -50,33 +50,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 boolean valid = jwtService.isTokenValid(jwt, userDetails);
 
-                if (valid) {
+                if (!valid) {
+                    SecurityContextHolder.clearContext();
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-                    authentication.setDetails(
-                            new WebAuthenticationDetailsSource()
-                                    .buildDetails(request)
+                    response.sendError(
+                            HttpServletResponse.SC_UNAUTHORIZED,
+                            "Invalid JWT"
                     );
 
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
+                    return;
                 }
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
             }
 
             filterChain.doFilter(request, response);
-        }
-        catch (JwtException | IllegalArgumentException e) {
-//            System.out.println(e);
+
+        } catch (JwtException | IllegalArgumentException e) {
+
             SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Invalid or expired JWT"
+            );
         }
     }
-
 }
