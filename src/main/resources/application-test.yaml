@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: management-test
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/wildchild_test
+    username: postgres
+    password: YoungWildFree!
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  flyway:
+    enabled: true
+
+  spring:
+    jpa:
+      show-sql: true
+
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG
+      org.hibernate.orm.jdbc.bind: TRACE

@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public interface InvoiceRepository
         extends JpaRepository<Invoice, UUID> {
+
+
     long countByCreatedAtGreaterThanEqualAndCreatedAtLessThan(
             LocalDateTime start,
             LocalDateTime end

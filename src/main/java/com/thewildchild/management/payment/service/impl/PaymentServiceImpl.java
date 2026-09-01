@@ -51,16 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
         paymentValidator.validateInvoiceCanAcceptPayment(invoice);
         paymentValidator.validatePaymentRequest(request);
 
-        BigDecimal totalPaid = invoice.getPayments()
-                .stream()
-                .filter(payment ->
-                        payment.getStatus() == PaymentStatus.SUCCESS
-                )
-                .map(Payment::getAmount)
-                .reduce(
-                        BigDecimal.ZERO,
-                        BigDecimal::add
-                );
+        BigDecimal totalPaid = paymentRepository.getTotalSuccessfulPayments(invoiceId);
 
         BigDecimal remainingAmount =
                 invoice.getGrandTotal()

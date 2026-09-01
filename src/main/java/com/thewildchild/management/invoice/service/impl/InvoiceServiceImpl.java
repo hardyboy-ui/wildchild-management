@@ -95,13 +95,14 @@ public class InvoiceServiceImpl implements InvoiceService {
                         .findById(diningSessionId)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
+
                                         "Dining session not found with id: "
                                                 + diningSessionId
                                 )
                         );
 
         List<Order> unbilledOrders =
-                diningSession.getOrders()
+                orderRepository.findAllByDiningSessionId(diningSessionId)
                         .stream()
                         .filter(order ->
                                 order.getBillingStatus()

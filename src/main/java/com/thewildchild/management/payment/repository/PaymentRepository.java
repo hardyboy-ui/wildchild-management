@@ -9,11 +9,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+
+    @Query("""
+    SELECT COALESCE(SUM(p.amount), 0)
+    FROM Payment p
+    WHERE p.invoice.id = :invoiceId
+      AND p.status =
+          com.thewildchild.management.payment.entity.PaymentStatus.SUCCESS
+    """)
+    BigDecimal getTotalSuccessfulPayments(
+            @Param("invoiceId") UUID invoiceId
+    );
 
     List<Payment> findAllByInvoiceIdAndStatus(
             UUID invoiceId,
