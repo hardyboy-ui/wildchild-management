@@ -3,6 +3,7 @@ package com.thewildchild.management.payment.controller;
 import com.thewildchild.management.payment.dto.request.CreatePaymentRequest;
 import com.thewildchild.management.payment.dto.response.PaymentResponse;
 import com.thewildchild.management.payment.service.PaymentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
+
 public class PaymentController {
 
     private final PaymentService paymentService;

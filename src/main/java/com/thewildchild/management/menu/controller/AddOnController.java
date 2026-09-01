@@ -4,6 +4,7 @@ import com.thewildchild.management.menu.dto.request.CreateAddOnRequest;
 import com.thewildchild.management.menu.dto.request.UpdateAddOnRequest;
 import com.thewildchild.management.menu.dto.response.AddOnResponse;
 import com.thewildchild.management.menu.service.AddOnService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/menu/add-ons")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class AddOnController {
 
     private final AddOnService addOnService;

@@ -2,6 +2,7 @@ package com.thewildchild.management.report.controller;
 
 import com.thewildchild.management.report.dto.response.*;
 import com.thewildchild.management.report.service.ReportService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
+
 public class ReportController {
 
     private final ReportService reportService;

@@ -32,6 +32,14 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(
+                                // Swagger UI
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+
+                                // OpenAPI JSON
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .requestMatchers("/api/v1/users/**")
                         .hasAnyRole("SUPER_ADMIN", "OWNER")
                         // ==================== MENU ITEMS ====================

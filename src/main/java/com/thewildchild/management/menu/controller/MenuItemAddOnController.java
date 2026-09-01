@@ -2,6 +2,7 @@ package com.thewildchild.management.menu.controller;
 
 import com.thewildchild.management.menu.dto.response.AddOnResponse;
 import com.thewildchild.management.menu.service.MenuItemAddOnService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/menu/items/{menuItemId}/add-ons")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class MenuItemAddOnController {
 
     private final MenuItemAddOnService menuItemAddOnService;

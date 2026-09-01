@@ -4,6 +4,7 @@ import com.thewildchild.management.table.dto.request.CreateCafeTableRequest;
 import com.thewildchild.management.table.dto.request.UpdateCafeTableRequest;
 import com.thewildchild.management.table.dto.response.CafeTableResponse;
 import com.thewildchild.management.table.service.CafeTableService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/tables")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class CafeTableController {
 
     private final CafeTableService cafeTableService;

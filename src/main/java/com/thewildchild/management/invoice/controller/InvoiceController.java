@@ -3,6 +3,7 @@ package com.thewildchild.management.invoice.controller;
 import com.thewildchild.management.invoice.dto.request.GenerateInvoiceRequest;
 import com.thewildchild.management.invoice.dto.response.InvoiceResponse;
 import com.thewildchild.management.invoice.service.InvoiceService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/invoices")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;

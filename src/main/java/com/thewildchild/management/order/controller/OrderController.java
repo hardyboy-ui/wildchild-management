@@ -3,6 +3,7 @@ package com.thewildchild.management.order.controller;
 import com.thewildchild.management.order.dto.request.AddOrderItemRequest;
 import com.thewildchild.management.order.dto.response.OrderResponse;
 import com.thewildchild.management.order.service.OrderService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class OrderController {
 
     private final OrderService orderService;

@@ -4,6 +4,7 @@ import com.thewildchild.management.user.dto.request.CreateUserRequest;
 import com.thewildchild.management.user.dto.request.UpdateUserRequest;
 import com.thewildchild.management.user.dto.response.UserResponse;
 import com.thewildchild.management.user.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;

@@ -3,6 +3,7 @@ package com.thewildchild.management.diningsession.controller;
 import com.thewildchild.management.diningsession.dto.request.CreateDiningSessionRequest;
 import com.thewildchild.management.diningsession.dto.response.DiningSessionResponse;
 import com.thewildchild.management.diningsession.service.DiningSessionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/dining-sessions")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class DiningSessionController {
 
     private final DiningSessionService diningSessionService;

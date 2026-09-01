@@ -4,6 +4,7 @@ import com.thewildchild.management.menu.dto.request.CreateMenuItemRequest;
 import com.thewildchild.management.menu.dto.request.UpdateMenuItemRequest;
 import com.thewildchild.management.menu.dto.response.MenuItemResponse;
 import com.thewildchild.management.menu.service.MenuItemService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/menu/items")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class MenuItemController {
 
     private final MenuItemService menuItemService;
