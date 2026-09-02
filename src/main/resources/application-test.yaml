@@ -1,11 +1,12 @@
 spring:
-  application:
-    name: management-test
+  config:
+    activate:
+      on-profile: test
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/wildchild_test
-    username: postgres
-    password: YoungWildFree!
+    url: ${TEST_DB_URL}
+    username: ${TEST_DB_USERNAME}
+    password: ${TEST_DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -15,11 +16,10 @@ spring:
   flyway:
     enabled: true
 
-  spring:
-    jpa:
-      show-sql: true
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
 
-  logging:
-    level:
-      org.hibernate.SQL: DEBUG
-      org.hibernate.orm.jdbc.bind: TRACE
+jwt:
+  secret: ${TEST_JWT_SECRET}

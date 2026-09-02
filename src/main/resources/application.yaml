@@ -1,19 +1,34 @@
+#spring:
+#  application:
+#    name: management
+#
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/wildchild
+#    username: wildchild_user
+#    password: YoungWildFree!
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#
+#  flyway:
+#    enabled: true
+#jwt:
+#  secret: ig5xbDmyN5xB0lIQPqkFRbYEvsa+TJEgxcxIBlMsk8o=
+#  expiration: 3600000
+
+
 spring:
   application:
     name: management
-    
-  datasource:
-    url: jdbc:postgresql://localhost:5432/wildchild
-    username: wildchild_user
-    password: YoungWildFree!
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
 
   flyway:
     enabled: true
+
 jwt:
-  secret: ig5xbDmyN5xB0lIQPqkFRbYEvsa+TJEgxcxIBlMsk8o=
-  expiration: 3600000
+  expiration: ${JWT_EXPIRATION:3600000}
