@@ -40,6 +40,7 @@ public class SecurityConfig {
                                 // OpenAPI JSON
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/api/v1/users/**")
                         .hasAnyRole("SUPER_ADMIN", "OWNER")
                         // ==================== MENU ITEMS ====================

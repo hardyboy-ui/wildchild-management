@@ -32,3 +32,9 @@ spring:
 
 jwt:
   expiration: ${JWT_EXPIRATION:3600000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

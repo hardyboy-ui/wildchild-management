@@ -314,3 +314,24 @@ Linux/macOS:
 ```bash
 ./mvnw test
 ```
+
+## Environment Variables
+
+The application uses environment variables for sensitive and environment-specific configuration.
+
+### Required Variables
+
+| Variable | Description | Example |
+|---|---|---|
+| `DB_URL` | PostgreSQL database URL | `jdbc:postgresql://localhost:5432/wildchild` |
+| `DB_USERNAME` | Database username | `wildchild_user` |
+| `DB_PASSWORD` | Database password | `********` |
+| `JWT_SECRET` | Secret key used to sign JWTs | `********` |
+| `JWT_EXPIRATION` | JWT expiration time in milliseconds | `3600000` |
+
+### Development
+
+Set the required environment variables before running the application with the `dev` profile.
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="dev"
