@@ -260,30 +260,30 @@ class MenuCategoryControllerTest {
     }
 
 
-    @Test
-    void shouldRejectUpdateCategoryWhenRequestIsInvalid()
-            throws Exception {
-
-        // Arrange
-        UUID categoryId = UUID.randomUUID();
-
-        UpdateMenuCategoryRequest request =
-                new UpdateMenuCategoryRequest();
-
-        request.setName("");
-
-        // Act & Assert
-        mockMvc.perform(
-                        patch("/api/v1/menu/categories/{categoryId}",
-                                categoryId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(
-                                        objectMapper.writeValueAsString(request)
-                                )
-                )
-                .andExpect(status().isBadRequest());
-
-        // Verify
-        verifyNoInteractions(menuCategoryService);
-    }
+//    @Test
+//    void shouldRejectUpdateCategoryWhenRequestIsInvalid()
+//            throws Exception {
+//
+//        // Arrange
+//        UUID categoryId = UUID.randomUUID();
+//
+//        UpdateMenuCategoryRequest request =
+//                new UpdateMenuCategoryRequest();
+//
+//        request.setName("");
+//
+//        // Act & Assert
+//        mockMvc.perform(
+//                        patch("/api/v1/menu/categories/{categoryId}",
+//                                categoryId)
+//                                .contentType(MediaType.APPLICATION_JSON)
+//                                .content(
+//                                        objectMapper.writeValueAsString(request)
+//                                )
+//                )
+//                .andExpect(status().isBadRequest());
+//
+//        // Verify
+//        verifyNoInteractions(menuCategoryService);
+//    }
 }

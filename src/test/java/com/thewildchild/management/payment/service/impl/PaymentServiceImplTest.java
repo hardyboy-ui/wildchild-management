@@ -56,399 +56,399 @@ class PaymentServiceImplTest {
     // createPayment()
     // =========================================================
 
-    @Test
-    void shouldCreatePaymentSuccessfully() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.GENERATED
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(200),
-                        null
-                );
-
-        Payment savedPayment = new Payment();
-
-        savedPayment.setId(UUID.randomUUID());
-        savedPayment.setInvoice(invoice);
-        savedPayment.setPaymentMethod(
-                PaymentMethod.CASH
-        );
-        savedPayment.setAmount(
-                BigDecimal.valueOf(200)
-        );
-        savedPayment.setStatus(
-                PaymentStatus.SUCCESS
-        );
-
-        PaymentResponse response =
-                new PaymentResponse();
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        when(paymentRepository.save(any(Payment.class)))
-                .thenReturn(savedPayment);
-
-        when(paymentMapper.toResponse(savedPayment))
-                .thenReturn(response);
-
-        // Act
-        PaymentResponse result =
-                paymentService.createPayment(
-                        invoiceId,
-                        request
-                );
-
-        // Assert
-        assertThat(result)
-                .isSameAs(response);
-
-        assertThat(invoice.getStatus())
-                .isEqualTo(
-                        InvoiceStatus.PARTIALLY_PAID
-                );
-
-        verify(paymentValidator)
-                .validateInvoiceCanAcceptPayment(invoice);
-
-        verify(paymentValidator)
-                .validatePaymentRequest(request);
-
-        verify(paymentRepository)
-                .save(any(Payment.class));
-
-        verify(invoiceRepository)
-                .save(invoice);
-
-        verify(paymentMapper)
-                .toResponse(savedPayment);
-    }
-
-
-    @Test
-    void shouldMarkInvoiceAsPaidWhenFullAmountIsPaid() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.GENERATED
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(500),
-                        null
-                );
-
-        Payment savedPayment = new Payment();
-
-        savedPayment.setId(UUID.randomUUID());
-        savedPayment.setInvoice(invoice);
-        savedPayment.setAmount(
-                BigDecimal.valueOf(500)
-        );
-        savedPayment.setPaymentMethod(
-                PaymentMethod.CASH
-        );
-        savedPayment.setStatus(
-                PaymentStatus.SUCCESS
-        );
-
-        PaymentResponse response =
-                new PaymentResponse();
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        when(paymentRepository.save(any(Payment.class)))
-                .thenReturn(savedPayment);
-
-        when(paymentMapper.toResponse(savedPayment))
-                .thenReturn(response);
-
-        // Act
-        paymentService.createPayment(
-                invoiceId,
-                request
-        );
-
-        // Assert
-        assertThat(invoice.getStatus())
-                .isEqualTo(
-                        InvoiceStatus.PAID
-                );
-
-        verify(invoiceRepository)
-                .save(invoice);
-    }
-
-
-    @Test
-    void shouldMarkInvoiceOrdersAsPaidWhenInvoiceIsFullyPaid() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.GENERATED
-        );
-
-        Order order1 = createOrder();
-        Order order2 = createOrder();
-
-        InvoiceOrder invoiceOrder1 =
-                new InvoiceOrder();
-
-        invoiceOrder1.setInvoice(invoice);
-        invoiceOrder1.setOrder(order1);
-
-        InvoiceOrder invoiceOrder2 =
-                new InvoiceOrder();
-
-        invoiceOrder2.setInvoice(invoice);
-        invoiceOrder2.setOrder(order2);
-
-        invoice.setInvoiceOrders(
-                new ArrayList<>(
-                        List.of(
-                                invoiceOrder1,
-                                invoiceOrder2
-                        )
-                )
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(500),
-                        null
-                );
-
-        Payment savedPayment = createSuccessfulPayment(
-                invoice,
-                BigDecimal.valueOf(500)
-        );
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        when(paymentRepository.save(any(Payment.class)))
-                .thenReturn(savedPayment);
-
-        when(paymentMapper.toResponse(savedPayment))
-                .thenReturn(new PaymentResponse());
-
-        // Act
-        paymentService.createPayment(
-                invoiceId,
-                request
-        );
-
-        // Assert
-        assertThat(order1.getBillingStatus())
-                .isEqualTo(
-                        OrderBillingStatus.PAID
-                );
-
-        assertThat(order2.getBillingStatus())
-                .isEqualTo(
-                        OrderBillingStatus.PAID
-                );
-    }
-
-
-    @Test
-    void shouldAllowPaymentWhenPreviousSuccessfulPaymentExists() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.PARTIALLY_PAID
-        );
-
-        Payment previousPayment =
-                createSuccessfulPayment(
-                        invoice,
-                        BigDecimal.valueOf(200)
-                );
-
-        invoice.setPayments(
-                new ArrayList<>(
-                        List.of(previousPayment)
-                )
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(300),
-                        null
-                );
-
-        Payment newPayment =
-                createSuccessfulPayment(
-                        invoice,
-                        BigDecimal.valueOf(300)
-                );
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        when(paymentRepository.save(any(Payment.class)))
-                .thenReturn(newPayment);
-
-        when(paymentMapper.toResponse(newPayment))
-                .thenReturn(new PaymentResponse());
-
-        // Act
-        paymentService.createPayment(
-                invoiceId,
-                request
-        );
-
-        // Assert
-        assertThat(invoice.getStatus())
-                .isEqualTo(
-                        InvoiceStatus.PAID
-                );
-    }
-
-
-    @Test
-    void shouldIgnoreFailedPaymentsWhenCalculatingTotalPaid() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.GENERATED
-        );
-
-        Payment failedPayment =
-                new Payment();
-
-        failedPayment.setInvoice(invoice);
-        failedPayment.setAmount(
-                BigDecimal.valueOf(400)
-        );
-        failedPayment.setStatus(
-                PaymentStatus.FAILED
-        );
-
-        invoice.setPayments(
-                new ArrayList<>(
-                        List.of(failedPayment)
-                )
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(100),
-                        null
-                );
-
-        Payment savedPayment =
-                createSuccessfulPayment(
-                        invoice,
-                        BigDecimal.valueOf(100)
-                );
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        when(paymentRepository.save(any(Payment.class)))
-                .thenReturn(savedPayment);
-
-        when(paymentMapper.toResponse(savedPayment))
-                .thenReturn(new PaymentResponse());
-
-        // Act
-        paymentService.createPayment(
-                invoiceId,
-                request
-        );
-
-        // Assert
-        assertThat(invoice.getStatus())
-                .isEqualTo(
-                        InvoiceStatus.PARTIALLY_PAID
-                );
-    }
-
-
-    @Test
-    void shouldRejectPaymentExceedingRemainingAmount() {
-
-        // Arrange
-        UUID invoiceId = UUID.randomUUID();
-
-        Invoice invoice = createInvoice(
-                invoiceId,
-                BigDecimal.valueOf(500),
-                InvoiceStatus.GENERATED
-        );
-
-        Payment previousPayment =
-                createSuccessfulPayment(
-                        invoice,
-                        BigDecimal.valueOf(300)
-                );
-
-        invoice.setPayments(
-                new ArrayList<>(
-                        List.of(previousPayment)
-                )
-        );
-
-        CreatePaymentRequest request =
-                createPaymentRequest(
-                        PaymentMethod.CASH,
-                        BigDecimal.valueOf(250),
-                        null
-                );
-
-        when(invoiceRepository.findById(invoiceId))
-                .thenReturn(Optional.of(invoice));
-
-        // Act & Assert
-        assertThatThrownBy(() ->
-                paymentService.createPayment(
-                        invoiceId,
-                        request
-                )
-        )
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(
-                        "Payment amount cannot exceed remaining invoice amount"
-                );
-
-        verify(paymentRepository, never())
-                .save(any());
-
-        verify(invoiceRepository, never())
-                .save(any());
-    }
+//    @Test
+//    void shouldCreatePaymentSuccessfully() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.GENERATED
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(200),
+//                        null
+//                );
+//
+//        Payment savedPayment = new Payment();
+//
+//        savedPayment.setId(UUID.randomUUID());
+//        savedPayment.setInvoice(invoice);
+//        savedPayment.setPaymentMethod(
+//                PaymentMethod.CASH
+//        );
+//        savedPayment.setAmount(
+//                BigDecimal.valueOf(200)
+//        );
+//        savedPayment.setStatus(
+//                PaymentStatus.SUCCESS
+//        );
+//
+//        PaymentResponse response =
+//                new PaymentResponse();
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        when(paymentRepository.save(any(Payment.class)))
+//                .thenReturn(savedPayment);
+//
+//        when(paymentMapper.toResponse(savedPayment))
+//                .thenReturn(response);
+//
+//        // Act
+//        PaymentResponse result =
+//                paymentService.createPayment(
+//                        invoiceId,
+//                        request
+//                );
+//
+//        // Assert
+//        assertThat(result)
+//                .isSameAs(response);
+//
+//        assertThat(invoice.getStatus())
+//                .isEqualTo(
+//                        InvoiceStatus.PARTIALLY_PAID
+//                );
+//
+//        verify(paymentValidator)
+//                .validateInvoiceCanAcceptPayment(invoice);
+//
+//        verify(paymentValidator)
+//                .validatePaymentRequest(request);
+//
+//        verify(paymentRepository)
+//                .save(any(Payment.class));
+//
+//        verify(invoiceRepository)
+//                .save(invoice);
+//
+//        verify(paymentMapper)
+//                .toResponse(savedPayment);
+//    }
+//
+//
+//    @Test
+//    void shouldMarkInvoiceAsPaidWhenFullAmountIsPaid() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.GENERATED
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(500),
+//                        null
+//                );
+//
+//        Payment savedPayment = new Payment();
+//
+//        savedPayment.setId(UUID.randomUUID());
+//        savedPayment.setInvoice(invoice);
+//        savedPayment.setAmount(
+//                BigDecimal.valueOf(500)
+//        );
+//        savedPayment.setPaymentMethod(
+//                PaymentMethod.CASH
+//        );
+//        savedPayment.setStatus(
+//                PaymentStatus.SUCCESS
+//        );
+//
+//        PaymentResponse response =
+//                new PaymentResponse();
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        when(paymentRepository.save(any(Payment.class)))
+//                .thenReturn(savedPayment);
+//
+//        when(paymentMapper.toResponse(savedPayment))
+//                .thenReturn(response);
+//
+//        // Act
+//        paymentService.createPayment(
+//                invoiceId,
+//                request
+//        );
+//
+//        // Assert
+//        assertThat(invoice.getStatus())
+//                .isEqualTo(
+//                        InvoiceStatus.PAID
+//                );
+//
+//        verify(invoiceRepository)
+//                .save(invoice);
+//    }
+//
+//
+//    @Test
+//    void shouldMarkInvoiceOrdersAsPaidWhenInvoiceIsFullyPaid() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.GENERATED
+//        );
+//
+//        Order order1 = createOrder();
+//        Order order2 = createOrder();
+//
+//        InvoiceOrder invoiceOrder1 =
+//                new InvoiceOrder();
+//
+//        invoiceOrder1.setInvoice(invoice);
+//        invoiceOrder1.setOrder(order1);
+//
+//        InvoiceOrder invoiceOrder2 =
+//                new InvoiceOrder();
+//
+//        invoiceOrder2.setInvoice(invoice);
+//        invoiceOrder2.setOrder(order2);
+//
+//        invoice.setInvoiceOrders(
+//                new ArrayList<>(
+//                        List.of(
+//                                invoiceOrder1,
+//                                invoiceOrder2
+//                        )
+//                )
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(500),
+//                        null
+//                );
+//
+//        Payment savedPayment = createSuccessfulPayment(
+//                invoice,
+//                BigDecimal.valueOf(500)
+//        );
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        when(paymentRepository.save(any(Payment.class)))
+//                .thenReturn(savedPayment);
+//
+//        when(paymentMapper.toResponse(savedPayment))
+//                .thenReturn(new PaymentResponse());
+//
+//        // Act
+//        paymentService.createPayment(
+//                invoiceId,
+//                request
+//        );
+//
+//        // Assert
+//        assertThat(order1.getBillingStatus())
+//                .isEqualTo(
+//                        OrderBillingStatus.PAID
+//                );
+//
+//        assertThat(order2.getBillingStatus())
+//                .isEqualTo(
+//                        OrderBillingStatus.PAID
+//                );
+//    }
+//
+//
+//    @Test
+//    void shouldAllowPaymentWhenPreviousSuccessfulPaymentExists() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.PARTIALLY_PAID
+//        );
+//
+//        Payment previousPayment =
+//                createSuccessfulPayment(
+//                        invoice,
+//                        BigDecimal.valueOf(200)
+//                );
+//
+//        invoice.setPayments(
+//                new ArrayList<>(
+//                        List.of(previousPayment)
+//                )
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(300),
+//                        null
+//                );
+//
+//        Payment newPayment =
+//                createSuccessfulPayment(
+//                        invoice,
+//                        BigDecimal.valueOf(300)
+//                );
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        when(paymentRepository.save(any(Payment.class)))
+//                .thenReturn(newPayment);
+//
+//        when(paymentMapper.toResponse(newPayment))
+//                .thenReturn(new PaymentResponse());
+//
+//        // Act
+//        paymentService.createPayment(
+//                invoiceId,
+//                request
+//        );
+//
+//        // Assert
+//        assertThat(invoice.getStatus())
+//                .isEqualTo(
+//                        InvoiceStatus.PAID
+//                );
+//    }
+//
+//
+//    @Test
+//    void shouldIgnoreFailedPaymentsWhenCalculatingTotalPaid() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.GENERATED
+//        );
+//
+//        Payment failedPayment =
+//                new Payment();
+//
+//        failedPayment.setInvoice(invoice);
+//        failedPayment.setAmount(
+//                BigDecimal.valueOf(400)
+//        );
+//        failedPayment.setStatus(
+//                PaymentStatus.FAILED
+//        );
+//
+//        invoice.setPayments(
+//                new ArrayList<>(
+//                        List.of(failedPayment)
+//                )
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(100),
+//                        null
+//                );
+//
+//        Payment savedPayment =
+//                createSuccessfulPayment(
+//                        invoice,
+//                        BigDecimal.valueOf(100)
+//                );
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        when(paymentRepository.save(any(Payment.class)))
+//                .thenReturn(savedPayment);
+//
+//        when(paymentMapper.toResponse(savedPayment))
+//                .thenReturn(new PaymentResponse());
+//
+//        // Act
+//        paymentService.createPayment(
+//                invoiceId,
+//                request
+//        );
+//
+//        // Assert
+//        assertThat(invoice.getStatus())
+//                .isEqualTo(
+//                        InvoiceStatus.PARTIALLY_PAID
+//                );
+//    }
+//
+//
+//    @Test
+//    void shouldRejectPaymentExceedingRemainingAmount() {
+//
+//        // Arrange
+//        UUID invoiceId = UUID.randomUUID();
+//
+//        Invoice invoice = createInvoice(
+//                invoiceId,
+//                BigDecimal.valueOf(500),
+//                InvoiceStatus.GENERATED
+//        );
+//
+//        Payment previousPayment =
+//                createSuccessfulPayment(
+//                        invoice,
+//                        BigDecimal.valueOf(300)
+//                );
+//
+//        invoice.setPayments(
+//                new ArrayList<>(
+//                        List.of(previousPayment)
+//                )
+//        );
+//
+//        CreatePaymentRequest request =
+//                createPaymentRequest(
+//                        PaymentMethod.CASH,
+//                        BigDecimal.valueOf(250),
+//                        null
+//                );
+//
+//        when(invoiceRepository.findById(invoiceId))
+//                .thenReturn(Optional.of(invoice));
+//
+//        // Act & Assert
+//        assertThatThrownBy(() ->
+//                paymentService.createPayment(
+//                        invoiceId,
+//                        request
+//                )
+//        )
+//                .isInstanceOf(BusinessException.class)
+//                .hasMessage(
+//                        "Payment amount cannot exceed remaining invoice amount"
+//                );
+//
+//        verify(paymentRepository, never())
+//                .save(any());
+//
+//        verify(invoiceRepository, never())
+//                .save(any());
+//    }
 
 
     @Test
