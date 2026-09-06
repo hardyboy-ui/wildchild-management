@@ -19,7 +19,7 @@ services:
       start_period: 10s
 
   app:
-    image: wildchild-management:1.0
+    image: wildchild-management:1.1
     container_name: wildchild-management
     ports:
       - "8080:8080"
@@ -31,6 +31,11 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      OWNER_EMAIL: ${OWNER_EMAIL}
+      OWNER_PASSWORD: ${OWNER_PASSWORD}
+      OWNER_PHONE_NUMBER: ${OWNER_PHONE_NUMBER}
+      OWNER_FIRST_NAME: ${OWNER_FIRST_NAME}
+      OWNER_LAST_NAME: ${OWNER_LAST_NAME}
 
     depends_on:
       postgres:

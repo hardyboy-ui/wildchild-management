@@ -38,3 +38,11 @@ management:
     web:
       exposure:
         include: health
+
+bootstrap:
+  owner:
+    email: ${OWNER_EMAIL}
+    password: ${OWNER_PASSWORD}
+    first-name: ${OWNER_FIRST_NAME}
+    last-name: ${OWNER_LAST_NAME}
+    phone-number: ${OWNER_PHONE_NUMBER}

@@ -39,7 +39,6 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(
         replace = AutoConfigureTestDatabase.Replace.NONE
 )
-@ActiveProfiles("test")
 @Transactional
 class OrderServiceIntegrationTest {
 

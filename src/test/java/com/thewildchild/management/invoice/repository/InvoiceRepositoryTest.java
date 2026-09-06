@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(
         replace = AutoConfigureTestDatabase.Replace.NONE
 )
-@ActiveProfiles("test")
 class InvoiceRepositoryIntegrationTest {
 
     @Autowired
