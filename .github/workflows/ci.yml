@@ -61,3 +61,12 @@ jobs:
           aws-region: ap-south-1
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
+      - name: Tag Docker image
+        run: |
+          docker tag wildchild-management:ci \
+            630171691142.dkr.ecr.ap-south-1.amazonaws.com/wildchild-management:${{ github.sha }}
+
+      - name: Push Docker image
+        run: |
+          docker push \
+            630171691142.dkr.ecr.ap-south-1.amazonaws.com/wildchild-management:${{ github.sha }}
