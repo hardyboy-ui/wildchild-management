@@ -71,8 +71,9 @@ jobs:
           docker push \
             630171691142.dkr.ecr.ap-south-1.amazonaws.com/wildchild-management:${{ github.sha }}
 
-      - name: Get current ECS task definition
+      - name: Download current ECS task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition wildchild-management:6 \
-            --query taskDefinition
+            --query taskDefinition \
+            > task-definition.json
