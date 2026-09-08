@@ -9,12 +9,39 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: wildchild
+          POSTGRES_USER: wildchild_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U wildchild_user -d wildchild"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      TEST_DB_URL: jdbc:postgresql://localhost:5432/wildchild
+      TEST_DB_USERNAME: wildchild_user
+      TEST_DB_PASSWORD: test_password
+      TEST_JWT_SECRET: ig5xbDmyN5xB0lIQPqkFRbYEvsa+TJEgxcxIBlMsk8o=
+      OWNER_EMAIL: test@example.com
+      OWNER_PASSWORD: test-password
+      OWNER_FIRST_NAME: Test
+      OWNER_LAST_NAME: Owner
+      OWNER_PHONE_NUMBER: "9999999999"
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
