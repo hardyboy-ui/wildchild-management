@@ -85,18 +85,12 @@ jobs:
           task-definition: task-definition.json
           container-name: Main
           image: 630171691142.dkr.ecr.ap-south-1.amazonaws.com/wildchild-management:${{ github.sha }}
-
-      - name: Verify ECS service
-        run: |
-          aws ecs describe-services \
-            --cluster wildchild-cluster \
-            --services wildchild-management-service
           
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
-          service: wildchild-management-service
+          service: wildchild-management-service-4bigqltz
           cluster: wildchild-cluster
           wait-for-service-stability: true
