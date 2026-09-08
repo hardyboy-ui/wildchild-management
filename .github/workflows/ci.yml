@@ -54,22 +54,10 @@ jobs:
         run: mvn --batch-mode verify
       - name: Build Docker image
         run: docker build -t wildchild-management:ci .
-      - name: Debug GitHub OIDC claims
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const token = await core.getIDToken('sts.amazonaws.com');
-            const payload = JSON.parse(
-              Buffer.from(token.split('.')[1], 'base64url').toString()
-            );
-
-            console.log('OIDC subject:', payload.sub);
-            console.log('OIDC audience:', payload.aud);
-            console.log('Repository:', payload.repository);
-            console.log('Repository ID:', payload.repository_id);
-            console.log('Repository owner ID:', payload.repository_owner_id);
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::630171691142:role/GitHubActionsWildChildECRRole
           aws-region: ap-south-1
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
