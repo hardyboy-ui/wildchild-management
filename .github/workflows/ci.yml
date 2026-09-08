@@ -86,6 +86,13 @@ jobs:
           container-name: Main
           image: 630171691142.dkr.ecr.ap-south-1.amazonaws.com/wildchild-management:${{ github.sha }}
 
+      - name: Verify ECS service
+        run: |
+          aws ecs describe-services \
+            --cluster wildchild-cluster \
+            --services wildchild-management-service
+          
+
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
