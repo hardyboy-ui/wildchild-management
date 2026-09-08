@@ -49,3 +49,5 @@ jobs:
 
       - name: Build and test
         run: mvn --batch-mode verify
+      - name: Build Docker image
+        run: docker build -t wildchild-management:ci .
