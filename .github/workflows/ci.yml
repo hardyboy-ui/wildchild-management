@@ -30,11 +30,11 @@ jobs:
       TEST_DB_USERNAME: wildchild_user
       TEST_DB_PASSWORD: test_password
       TEST_JWT_SECRET: ig5xbDmyN5xB0lIQPqkFRbYEvsa+TJEgxcxIBlMsk8o=
-      OWNER_EMAIL: test@example.com
+      OWNER_EMAIL: mehrotrahardy@example.com
       OWNER_PASSWORD: test-password
       OWNER_FIRST_NAME: Test
       OWNER_LAST_NAME: Owner
-      OWNER_PHONE_NUMBER: "9999999999"
+      OWNER_PHONE_NUMBER: "0000000000"
 
     steps:
       - name: Checkout code
